@@ -19,8 +19,12 @@ client.on('message', (msg) => {
                     "value": "Writes all banner from chosen year."
                 },
                 {
-                    "name": "!next",
+                    "name": "!next-banner",
                     "value": "Next upcomming Banner!"
+                },
+                {
+                    "name": "!next-event",
+                    "value": "Next upcomming Event!"
                 }
             ]
         }
@@ -42,9 +46,13 @@ client.on('message', (msg) => {
         selectedBanner(msg, yearnumber);
     }
 
-    if (msg.content === "!next") {
+    if (msg.content === "!next-banner") {
         msg.channel.send("This is the next banner " + msg.author);
         nextBanner(msg);
+    }
+    if (msg.content === "!next-event") {
+        msg.channel.send("This is the next banner " + msg.author);
+        nextEvent(msg);
     }
 
 });
@@ -194,7 +202,7 @@ function nextBanner(msg) {
                     if (timeToDate > 0) {
                         msg.channel.send(content);
 
-                        msg.channel.send("This many days left: " + Math.floor(timeLeft / 1000 / 60 / 60 / 24));
+                        msg.channel.send("This many days left untill this banner: " + Math.floor(timeLeft / 1000 / 60 / 60 / 24));
                         return;
                     }
                 }
@@ -208,6 +216,67 @@ function nextBanner(msg) {
     request.end();
 
 }
+
+function nextEvent(msg) {
+
+    let options = {
+        host: 'fate-go.cirnopedia.org',
+        path: '/quest_event.php'
+    }
+
+    let request = http.request(options, function (res) {
+        let data = '';
+        res.on('data', function (chunk) {
+            data += chunk;
+        });
+        res.on('end', function () {
+
+            const dom = new JSDOM(data);
+
+            for (let year = 2017; year < 2020; year++) {
+
+
+                let size = dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr').length;
+                for (let i = 1; i < size; i++) {
+                    let text = dom.window.document.getElementById(year.toString()).nextElementSibling.getElementsByTagName('tr')[i].cells[0].textContent;
+                    let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.getAttribute('src');
+                    let content =
+                    {
+                        "embed": {
+                            "image": {
+                                "url": image,
+                            },
+
+                            "title": text,
+                            "color": 1127128
+
+                        }
+                    };
+
+                    let date = text.match("[0-9][0-9]/[0-9][0-9]");
+                    let date1 = new Date(2019, ((new Number(date[0].split("/")[0])) - 1), new Number(date[0].split("/")[1]));
+                    let date2 = new Date();
+                    let timeToDate = (date1.getTime() - date2.getTime());
+                    let timeLeft = new Date(timeToDate);
+
+                    if (timeToDate > 0) {
+                        msg.channel.send(content);
+
+                        msg.channel.send("This many days left untill this banner: " + Math.floor(timeLeft / 1000 / 60 / 60 / 24));
+                        return;
+                    }
+                }
+            }
+        });
+    });
+
+    request.on('error', function (e) {
+        console.log(e.message);
+    });
+    request.end();
+
+}
+
 
 
 client.login(config.token);
