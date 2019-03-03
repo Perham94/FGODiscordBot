@@ -252,8 +252,9 @@ function nextEvent(msg) {
                 let size = dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr').length;
                 for (let i = 1; i < size; i++) {
                     let text = dom.window.document.getElementById(year.toString()).nextElementSibling.getElementsByTagName('tr')[i].cells[0].textContent;
-                    let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.getAttribute('src');
-                    let content =
+                    let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.firstElementChild.getAttribute('src');
+                   
+                  let content =
                     {
                         "embed": {
                             "image": {
