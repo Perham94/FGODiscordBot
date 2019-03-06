@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-const config = require("./config.json");
-const http = require('http');
+
+
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
@@ -12,11 +12,11 @@ client.on('message', (msg) => {
             "fields": [
                 {
                     "name": "!newest",
-                    "value": "Newest things that will appear in future."
+                    "value": "Latest banner in the jp server."
                 },
                 {
                     "name": "!year {year}",
-                    "value": "Writes all banner from chosen year."
+                    "value": "Writes and search a banner from  the chosen year."
                 },
                 {
                     "name": "!next-banner",
@@ -37,13 +37,18 @@ client.on('message', (msg) => {
         msg.channel.send(msg.author + ", DM sent!");
     }
     if (msg.content === "!newest") {
-        msg.channel.send("this is all the list " + msg.author);
-        allbanners(msg);
+        msg.channel.send("this is current banner at jp " + msg.author);
+       allbanners(msg);
+        
+
     }
 
     if (yearnumber != undefined && msg.content.split(" ")[0] === "!year") {
-        msg.channel.send("this is the entire list for this year " + msg.author);
-        selectedBanner(msg, yearnumber);
+        msg.author.send("this is the entire list for this year " + msg.author);
+      selectedBanner(msg, yearnumber);
+        msg.channel.send(msg.author + ", DM sent!");
+
+        
     }
 
     if (msg.content === "!next-banner") {
@@ -51,7 +56,7 @@ client.on('message', (msg) => {
         nextBanner(msg);
     }
     if (msg.content === "!next-event") {
-        msg.channel.send("This is the next banner " + msg.author);
+        msg.channel.send("This is the next event " + msg.author);
         nextEvent(msg);
     }
 
@@ -80,12 +85,13 @@ function allbanners(msg) {
 
             const dom = new JSDOM(data);
             // console.log(dom.window.document.getElementById("2019").innerHTML);
-            let year = "2019";
+            let year = new Date().getFullYear().toString();
             let size = dom.window.document.getElementById(year).nextElementSibling.querySelectorAll('tr').length;
-            for (let i = 1; i < size; i++) {
-                setTimeout(function () {
-                    let text = dom.window.document.getElementById(year).nextElementSibling.getElementsByTagName('tr')[i].cells[0].textContent;
-                    let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.getAttribute('src');
+           
+             
+                    let text = dom.window.document.getElementById(year).nextElementSibling.getElementsByTagName('tr')[size-1].cells[0].textContent;
+                    let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year).nextElementSibling.querySelectorAll('tr')[size-1].firstElementChild.firstElementChild.getAttribute('src');
+                    
                     let content =
                     {
                         "embed": {
@@ -96,8 +102,8 @@ function allbanners(msg) {
                         }
                     };
                     msg.channel.send(content);
-                }, 3000 * i);
-            }
+                
+            
         });
     });
     request.on('error', function (e) {
@@ -142,7 +148,7 @@ function selectedBanner(msg, year) {
                             "description": text
                         }
                     };
-                    msg.channel.send(content);
+                    msg.author.send(content);
                 }, 3000 * i);
 
             }
@@ -180,6 +186,12 @@ function nextBanner(msg) {
                 for (let i = 1; i < size; i++) {
                     let text = dom.window.document.getElementById(year.toString()).nextElementSibling.getElementsByTagName('tr')[i].cells[0].textContent;
                     let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.getAttribute('src');
+                    let date = text.match("[0-9][0-9]/[0-9][0-9]");
+                    let date1 = new Date(2019, ((new Number(date[0].split("/")[0])) - 1), new Number(date[0].split("/")[1]));
+                    let date2 = new Date();
+                    let timeToDate = (date1.getTime() - date2.getTime());
+                    let timeLeft = new Date(timeToDate);  
+                    let dateText = "This many days left untill this banner: " + Math.floor(timeLeft / 1000 / 60 / 60 / 24);
                     let content =
                     {
                         "embed": {
@@ -188,21 +200,17 @@ function nextBanner(msg) {
                             },
 
                             "title": text,
+                           "description" : dateText,
                             "color": 1127128
 
                         }
                     };
 
-                    let date = text.match("[0-9][0-9]/[0-9][0-9]");
-                    let date1 = new Date(2019, ((new Number(date[0].split("/")[0])) - 1), new Number(date[0].split("/")[1]));
-                    let date2 = new Date();
-                    let timeToDate = (date1.getTime() - date2.getTime());
-                    let timeLeft = new Date(timeToDate);
+               
 
                     if (timeToDate > 0) {
                         msg.channel.send(content);
 
-                        msg.channel.send("This many days left untill this banner: " + Math.floor(timeLeft / 1000 / 60 / 60 / 24));
                         return;
                     }
                 }
@@ -239,30 +247,40 @@ function nextEvent(msg) {
                 let size = dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr').length;
                 for (let i = 1; i < size; i++) {
                     let text = dom.window.document.getElementById(year.toString()).nextElementSibling.getElementsByTagName('tr')[i].cells[0].textContent;
-                    let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.getAttribute('src');
-                    let content =
-                    {
-                        "embed": {
-                            "image": {
-                                "url": image,
-                            },
-
-                            "title": text,
-                            "color": 1127128
-
-                        }
-                    };
-
+                    let link = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.getAttribute('href');
+                    let image = "https://fate-go.cirnopedia.org/" + dom.window.document.getElementById(year.toString()).nextElementSibling.querySelectorAll('tr')[i].firstElementChild.firstElementChild.firstElementChild.getAttribute('src');
                     let date = text.match("[0-9][0-9]/[0-9][0-9]");
                     let date1 = new Date(2019, ((new Number(date[0].split("/")[0])) - 1), new Number(date[0].split("/")[1]));
                     let date2 = new Date();
                     let timeToDate = (date1.getTime() - date2.getTime());
                     let timeLeft = new Date(timeToDate);
+                    let dateText = "This many days left untill this event: " + Math.floor(timeLeft / 1000 / 60 / 60 / 24);
+                  let content =
+                      {
+                        
+                        "embed": {
+                           "image": {
+                                "url": image,
+                            },
+                           "color": 1127128,
+                          
+                          
+                              
+                            "title":text,
+                            "url": link,
+                            "description" : dateText
+                            
+                           
+                          
+                          
+                        }
+                    };
+
+                 
 
                     if (timeToDate > 0) {
                         msg.channel.send(content);
 
-                        msg.channel.send("This many days left untill this banner: " + Math.floor(timeLeft / 1000 / 60 / 60 / 24));
                         return;
                     }
                 }
@@ -276,6 +294,11 @@ function nextEvent(msg) {
     request.end();
 
 }
+
+
+
+
+
 
 
 
